@@ -8,31 +8,22 @@ const files = 'src/fs/files';
 const filesCopy = 'src/fs/files_copy';
 
 
-const copy = async (src1, src2) => {
+const copy = async (src, dest) => {
+    const exist = fs.existsSync(src);
+    const stats = exist && fs.statSync(src);
+    const isDirectory = stats && stats.isDirectory();
 
-    fs.stat(filesCopy,  (err) => {
+    if(isDirectory) {
+        if(!fs.existsSync(dest))
+            fs.mkdirSync(dest);
 
-        if (err) {
-            const exist = fs.existsSync(src1);
-            const stats = exist && fs.statSync(src1);
-            const isDirectory = stats && stats.isDirectory();
-
-            if(isDirectory) {
-                if(!fs.existsSync(src2))
-                    fs.mkdirSync(src2);
-
-                fs.readdirSync(src1).forEach(item => {
-                    copy(path.join(src1, item), path.join(src2, item));
-                });
-            } else {
-                if(!fs.existsSync(src2))
-                    fs.copyFileSync(src1, src2)
-            }
-        
-        }
-        console.log('FS operation failed');
-      })
-
+        fs.readdirSync(src).forEach(childItemName => {
+            copy(path.join(src, childItemName), path.join(dest, childItemName));
+        });
+    } else {
+        if(!fs.existsSync(dest))
+            fs.copyFileSync(src, dest)
+    }
 };
 
 copy(files, filesCopy);
